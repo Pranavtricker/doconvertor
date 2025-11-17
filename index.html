@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>doconvert — File Converter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-wrap">
+      <div class="brand">doconvert</div>
+      <nav class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#faq">FAQ</a>
+        <button id="theme-toggle" class="btn small ghost" aria-label="Toggle theme">Theme</button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <h1>Convert files, instantly</h1>
+        <p class="sub">Word, PDF, and images — fast, secure, and free. Upload and convert in seconds.</p>
+        <div class="cta">
+          <a href="#upload" class="btn primary">Get Started</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="upload" class="upload-section">
+      <div class="container">
+        <div class="card">
+          <div class="actions" style="margin-bottom: 12px;">
+            <select id="mode" class="btn">
+              <option value="word-to-pdf">Word → PDF</option>
+              <option value="pdf-to-word">PDF → Word</option>
+              <option value="jpg-to-pdf">JPG/PNG → PDF</option>
+              <option value="merge-pdfs">Merge PDFs</option>
+            </select>
+            <div id="mode-help" style="color: var(--muted);">Upload a .doc or .docx</div>
+          </div>
+          <div id="dropzone" class="dropzone" role="button" tabindex="0" aria-label="Upload Word file">
+            <input id="file-input" type="file" accept=".doc,.docx" hidden>
+            <div class="dz-inner">
+              <div class="icon">📄</div>
+              <div class="dz-text">Drag & drop your Word file here</div>
+              <div class="dz-sub">or</div>
+              <button id="choose-btn" class="btn">Choose file</button>
+            </div>
+          </div>
+          <div class="file-info" id="file-info"></div>
+          <ul id="file-list" class="file-list" hidden></ul>
+          <div id="jpg-options" class="options" hidden>
+            <label>
+              Page size
+              <select id="page-size" class="btn"><option value="A4">A4</option><option value="Letter">Letter</option></select>
+            </label>
+            <label>
+              Orientation
+              <select id="orientation" class="btn"><option value="auto">Auto</option><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select>
+            </label>
+          </div>
+          <div id="docx-preview" class="docx-preview" hidden></div>
+          <div class="actions">
+            <button id="convert-btn" class="btn primary" disabled>Convert to PDF</button>
+            <button id="download-btn" class="btn" disabled>Download PDF</button>
+            <button id="clear-btn" class="btn ghost" disabled>Clear</button>
+          </div>
+          <div id="progress" class="progress" aria-hidden="true">
+            <div class="bar"></div>
+          </div>
+          <div id="result" class="result" aria-hidden="true"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="features">
+      <div class="container grid">
+        <div class="feature">
+          <h3>Lightning fast</h3>
+          <p>Optimized pipeline delivers your PDFs in seconds.</p>
+        </div>
+        <div class="feature">
+          <h3>Privacy first</h3>
+          <p>Files are processed securely. No sign-up required.</p>
+        </div>
+        <div class="feature">
+          <h3>Pixel-perfect PDFs</h3>
+          <p>Preserves layout, fonts, and styling from your Word documents.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="how-it-works" class="how">
+      <div class="container steps">
+        <div class="step"><span class="num">1</span><span>Select your Word file</span></div>
+        <div class="step"><span class="num">2</span><span>Click Convert</span></div>
+        <div class="step"><span class="num">3</span><span>Download your PDF</span></div>
+      </div>
+    </section>
+
+    <section id="faq" class="faq">
+      <div class="container">
+        <h2>Frequently asked questions</h2>
+        <details>
+          <summary>Which file types are supported?</summary>
+          <p>Microsoft Word files: .doc and .docx.</p>
+        </details>
+        <details>
+          <summary>Is it free?</summary>
+          <p>Yes. doconvert is free to use for basic conversions.</p>
+        </details>
+        <details>
+          <summary>Where are my files processed?</summary>
+          <p>Files are processed securely. Connect a backend to enable real conversions and downloads.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-wrap">
+      <div class="brand">doconvert</div>
+      <div class="copy">© <span id="year"></span> doconvert. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.16/mammoth.browser.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docx-preview@0.3.4/dist/docx-preview.css">
+  <script src="https://cdn.jsdelivr.net/npm/docx-preview@0.3.4/dist/docx-preview.min.js"></script>
+  <script src="script.js"></script>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

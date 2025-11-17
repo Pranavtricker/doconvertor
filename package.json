@@ -1,0 +1,22 @@
+{
+  "name": "doconvert",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "description": "",
+  "main": "script.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "fs-extra": "^11.3.2",
+    "multer": "^2.0.2",
+    "pdf-lib": "^1.17.1",
+    "uuid": "^13.0.0"
+  }
+}
