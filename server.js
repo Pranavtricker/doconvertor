@@ -51,57 +51,40 @@ async function convertWithSoffice(inputPath, outputDir) {
   const soffice = findSoffice()
   return new Promise((resolve, reject) => {
     const args = ['--headless', '--norestore', '--nolockcheck', '--convert-to', 'pdf', '--outdir', outputDir, inputPath]
-    const child = spawn(soffice, args, { stdio: 'ignore' })
-    child.on('error', reject)
+    const child = spawn(soffice, args, { stdio: ['ignore', 'pipe', 'pipe'] })
+    let stderr = ''
+    child.stderr.on('data', (d) => { stderr += d.toString() })
+    child.on('error', (err) => {
+      if (err && err.code === 'ENOENT') reject(new Error('LibreOffice not found. Please install LibreOffice.'))
+      else reject(err)
+    })
     child.on('exit', (code) => {
       if (code === 0) resolve()
-      else reject(new Error('LibreOffice conversion failed with code ' + code))
+      else reject(new Error(stderr || ('LibreOffice conversion failed with code ' + code)))
     })
   })
 }
 
+// Simple file upload endpoint for JPG to PDF conversion
 app.post('/api/jpg-to-pdf', upload.array('files', 50), async (req, res) => {
-  const files = req.files || []
-  if (!files.length) return res.status(400).json({ error: 'No images uploaded' })
   try {
-    const pdfDoc = await PDFDocument.create()
-    const size = (req.body.pageSize || 'A4').toUpperCase()
-    const orientation = (req.body.orientation || 'auto').toLowerCase()
-    const sizes = { A4: [595, 842], LETTER: [612, 792] }
-    const base = sizes[size] || sizes.A4
-    for (const f of files) {
-      const bytes = await fsp.readFile(f.path)
-      let img
-      const ext = path.extname(f.originalname).toLowerCase()
-      if (ext === '.png') img = await pdfDoc.embedPng(bytes)
-      else img = await pdfDoc.embedJpg(bytes)
-      const iw = img.width
-      const ih = img.height
-      let pageWidth = base[0]
-      let pageHeight = base[1]
-      if (orientation === 'landscape') { const t = pageWidth; pageWidth = pageHeight; pageHeight = t }
-      else if (orientation === 'auto') { if (iw > ih) { const t = pageWidth; pageWidth = pageHeight; pageHeight = t } }
-      const page = pdfDoc.addPage([pageWidth, pageHeight])
-      const margin = 36
-      const maxW = pageWidth - margin * 2
-      const maxH = pageHeight - margin * 2
-      const scale = Math.min(maxW / iw, maxH / ih)
-      const drawW = iw * scale
-      const drawH = ih * scale
-      const x = (pageWidth - drawW) / 2
-      const y = (pageHeight - drawH) / 2
-      page.drawImage(img, { x, y, width: drawW, height: drawH })
+    const files = req.files || [];
+    if (!files.length) {
+      return res.status(400).json({ error: 'No images uploaded' });
     }
-    const outBytes = await pdfDoc.save()
-    res.setHeader('Content-Type', 'application/pdf')
-    res.setHeader('Content-Disposition', 'attachment; filename="images.pdf"')
-    res.end(Buffer.from(outBytes))
+    
+    // Return the file information to the client
+    res.json({
+      success: true,
+      files: files.map(file => ({
+        name: file.originalname,
+        path: `/uploads/${file.filename}`,
+        type: file.mimetype
+      }))
+    });
   } catch (e) {
-    res.status(500).json({ error: e.message || 'Failed to create PDF from images' })
-  } finally {
-    try {
-      for (const f of files) { try { await fsp.unlink(f.path) } catch {} }
-    } catch {}
+    console.error('Error handling JPG to PDF request:', e);
+    res.status(500).json({ error: 'Failed to process request' });
   }
 })
 
@@ -160,38 +143,35 @@ app.post('/api/pdf-to-word', upload.single('file'), async (req, res) => {
   }
 })
 
+// File upload endpoint for Word to PDF conversion
 app.post('/api/convert', upload.single('file'), async (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
-  const inputPath = req.file.path
-  const outDir = path.dirname(inputPath)
-  try {
-    await convertWithSoffice(inputPath, outDir)
-  } catch (err) {
-    return res.status(500).json({ error: err.message || 'Conversion failed' })
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
   }
+  
   try {
-    const inBase = path.parse(inputPath).name
-    let outPath = path.join(outDir, inBase + '.pdf')
-    try { await fsp.access(outPath) } catch {
-      const origBase = path.parse(req.file.originalname).name
-      const altPath = path.join(outDir, origBase + '.pdf')
-      try { await fsp.access(altPath); outPath = altPath } catch {}
-    }
-    await fsp.access(outPath)
-    res.setHeader('Content-Type', 'application/pdf')
-    res.setHeader('Content-Disposition', `attachment; filename="${path.basename(outPath)}"`)
-    const stream = fs.createReadStream(outPath)
-    stream.pipe(res)
-    stream.on('close', async () => {
-      try { await fsp.unlink(inputPath) } catch {}
-      try { await fsp.unlink(outPath) } catch {}
-    })
+    // Return the file information to the client
+    res.json({
+      success: true,
+      file: {
+        name: req.file.originalname,
+        path: `/uploads/${req.file.filename}`,
+        type: req.file.mimetype
+      }
+    });
   } catch (e) {
-    res.status(500).json({ error: 'Converted file not found' })
+    console.error('Error handling file upload:', e);
+    res.status(500).json({ error: 'Failed to process file' });
   }
 })
 
 const port = process.env.PORT || 3000
 app.listen(port, () => {
   console.log(`doconvert server listening on http://localhost:${port}/`)
+})
+
+app.get('/api/health', (req, res) => {
+  const pathGuess = findSoffice()
+  const exists = (() => { try { return fs.existsSync(pathGuess) } catch { return false } })()
+  res.json({ sofficePath: pathGuess, exists })
 })

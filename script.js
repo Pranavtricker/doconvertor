@@ -9,6 +9,7 @@ const downloadBtn = $('#download-btn');
 const modeSelect = $('#mode');
 const modeHelp = document.getElementById('mode-help');
 const themeToggle = document.getElementById('theme-toggle');
+const serviceStatus = document.getElementById('service-status');
 const fileInfo = $('#file-info');
 const fileList = document.getElementById('file-list');
 const jpgOptions = document.getElementById('jpg-options');
@@ -54,6 +55,11 @@ function isPdf(file) {
   return file && file.name.toLowerCase().endsWith('.pdf');
 }
 
+function isPptx(file) {
+  const name = file.name.toLowerCase();
+  return name.endsWith('.pptx') || name.endsWith('.ppt');
+}
+
 function isImage(file) {
   const n = file.name.toLowerCase();
   return n.endsWith('.jpg') || n.endsWith('.jpeg') || n.endsWith('.png');
@@ -73,6 +79,7 @@ function setFiles(files) {
   let valid = [];
   if (mode === 'word-to-pdf') valid = Array.from(files).filter(isWord);
   else if (mode === 'pdf-to-word') valid = Array.from(files).filter(isPdf).slice(0, 1);
+  else if (mode === 'pptx-to-pdf') valid = Array.from(files).filter(isPptx);
   else if (mode === 'jpg-to-pdf') valid = Array.from(files).filter(isImage);
   else if (mode === 'merge-pdfs') valid = Array.from(files).filter(isPdf);
   currentFiles = valid;
@@ -84,7 +91,7 @@ function setFiles(files) {
     downloadBtn.disabled = true;
     return;
   }
-  if (mode === 'word-to-pdf' || mode === 'pdf-to-word') {
+  if (mode === 'word-to-pdf' || mode === 'pdf-to-word' || mode === 'pptx-to-pdf') {
     fileInfo.textContent = `${valid[0].name} • ${formatBytes(valid[0].size)}`;
     if (fileList) { fileList.innerHTML = ''; fileList.classList.remove('show'); fileList.hidden = true; }
     if (jpgOptions) { jpgOptions.hidden = mode !== 'jpg-to-pdf'; }
@@ -118,7 +125,7 @@ fileInput.addEventListener('change', () => setFiles(fileInput.files));
 clearBtn.addEventListener('click', () => resetUI());
 
 convertBtn.addEventListener('click', async () => {
-  if (!currentFile) return;
+  if (!currentFile && currentFiles.length === 0) return;
   convertBtn.disabled = true;
   downloadBtn.disabled = true;
   progress.setAttribute('aria-hidden', 'false');
@@ -134,6 +141,9 @@ convertBtn.addEventListener('click', async () => {
     } else if (mode === 'pdf-to-word') {
       formData.append('file', currentFile);
       endpoint = '/api/pdf-to-word';
+    } else if (mode === 'pptx-to-pdf') {
+      formData.append('file', currentFile);
+      endpoint = '/api/pptx-to-pdf';
     } else if (mode === 'jpg-to-pdf') {
       for (const f of currentFiles) formData.append('files', f);
       formData.append('pageSize', pageSizeSel ? pageSizeSel.value : 'A4');
@@ -146,8 +156,10 @@ convertBtn.addEventListener('click', async () => {
     progressBar.style.width = '50%';
     const res = await fetch(endpoint, { method: 'POST', body: formData });
     if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.error || 'Server conversion failed');
+      const text = await res.text();
+      let msg = 'Server conversion failed';
+      try { const data = JSON.parse(text); msg = data.error || msg } catch { if (text) msg = text }
+      throw new Error(msg);
     }
     progressBar.style.width = '85%';
     const blob = await res.blob();
@@ -157,6 +169,7 @@ convertBtn.addEventListener('click', async () => {
     let filename = 'output.pdf';
     if (mode === 'word-to-pdf') filename = pdfNameFrom(currentFile);
     else if (mode === 'pdf-to-word') filename = currentFile.name.replace(/\.pdf$/i, '') + '.docx';
+    else if (mode === 'pptx-to-pdf') filename = currentFile.name.replace(/\.(pptx|ppt)$/i, '') + '.pdf';
     else if (mode === 'merge-pdfs') filename = 'merged.pdf';
     else if (mode === 'jpg-to-pdf') filename = 'images.pdf';
     link.download = filename;
@@ -204,6 +217,11 @@ function updateMode() {
     fileInput.multiple = false;
     if (modeHelp) modeHelp.textContent = 'Upload a .pdf';
     if (jpgOptions) jpgOptions.hidden = true;
+  } else if (v === 'pptx-to-pdf') {
+    fileInput.accept = '.pptx,.ppt';
+    fileInput.multiple = false;
+    if (modeHelp) modeHelp.textContent = 'Upload a .pptx or .ppt';
+    if (jpgOptions) jpgOptions.hidden = true;
   } else if (v === 'jpg-to-pdf') {
     fileInput.accept = '.jpg,.jpeg,.png';
     fileInput.multiple = true;
@@ -236,10 +254,22 @@ if (themeToggle) {
     applyTheme(current === 'dark' ? 'light' : 'dark');
   });
 }
+
+async function checkServiceStatus() {
+  try {
+    const r = await fetch('/api/status');
+    if (!r.ok) throw new Error('status failed');
+    const s = await r.json();
+    // We can assume services are available if we are using ConvertAPI
+    // But let's keep the check if the endpoint exists, or just ignore it
+  } catch { }
+}
+
+checkServiceStatus();
 function renderFileList() {
   const mode = modeSelect ? modeSelect.value : 'word-to-pdf';
   if (!fileList) return;
-  if (mode === 'word-to-pdf' || mode === 'pdf-to-word') { fileList.hidden = true; return; }
+  if (mode === 'word-to-pdf' || mode === 'pdf-to-word' || mode === 'pptx-to-pdf') { fileList.hidden = true; return; }
   fileList.innerHTML = '';
   fileList.hidden = false;
   fileList.classList.add('show');

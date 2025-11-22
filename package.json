@@ -17,6 +17,8 @@
     "fs-extra": "^11.3.2",
     "multer": "^2.0.2",
     "pdf-lib": "^1.17.1",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "formidable": "^3.5.1",
+    "convertapi": "^2.4.0"
   }
 }
