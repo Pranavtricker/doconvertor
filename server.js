@@ -7,7 +7,7 @@ import path from 'path'
 import { spawn } from 'child_process'
 import { fileURLToPath } from 'url'
 import { v4 as uuidv4 } from 'uuid'
-import { PDFDocument, StandardFonts } from 'pdf-lib'
+import { PDFDocument } from 'pdf-lib'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -21,7 +21,7 @@ const upload = multer({
   storage: multer.diskStorage({
     destination: async (req, file, cb) => {
       const dir = path.join(__dirname, 'uploads')
-      try { await fsp.mkdir(dir, { recursive: true }) } catch {}
+      try { await fsp.mkdir(dir, { recursive: true }) } catch { }
       cb(null, dir)
     },
     filename: (req, file, cb) => {
@@ -33,38 +33,6 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 }
 })
 
-function findSoffice() {
-  const candidates = [
-    'soffice',
-    'C:/Program Files/LibreOffice/program/soffice.exe',
-    'C:/Program Files (x86)/LibreOffice/program/soffice.exe'
-  ]
-  for (const c of candidates) {
-    try {
-      if (fs.existsSync(c)) return c
-    } catch {}
-  }
-  return 'soffice'
-}
-
-async function convertWithSoffice(inputPath, outputDir) {
-  const soffice = findSoffice()
-  return new Promise((resolve, reject) => {
-    const args = ['--headless', '--norestore', '--nolockcheck', '--convert-to', 'pdf', '--outdir', outputDir, inputPath]
-    const child = spawn(soffice, args, { stdio: ['ignore', 'pipe', 'pipe'] })
-    let stderr = ''
-    child.stderr.on('data', (d) => { stderr += d.toString() })
-    child.on('error', (err) => {
-      if (err && err.code === 'ENOENT') reject(new Error('LibreOffice not found. Please install LibreOffice.'))
-      else reject(err)
-    })
-    child.on('exit', (code) => {
-      if (code === 0) resolve()
-      else reject(new Error(stderr || ('LibreOffice conversion failed with code ' + code)))
-    })
-  })
-}
-
 // Simple file upload endpoint for JPG to PDF conversion
 app.post('/api/jpg-to-pdf', upload.array('files', 50), async (req, res) => {
   try {
@@ -72,19 +40,42 @@ app.post('/api/jpg-to-pdf', upload.array('files', 50), async (req, res) => {
     if (!files.length) {
       return res.status(400).json({ error: 'No images uploaded' });
     }
-    
-    // Return the file information to the client
-    res.json({
-      success: true,
-      files: files.map(file => ({
-        name: file.originalname,
-        path: `/uploads/${file.filename}`,
-        type: file.mimetype
-      }))
-    });
+
+    const pdfDoc = await PDFDocument.create()
+    // Default to A4 if not specified, though this simple endpoint might just be for file info
+    // But let's implement the actual conversion here for local server completeness if needed
+    // For now, matching original logic which just returned file info, 
+    // BUT the frontend expects to call /api/jpg-to-pdf and get a PDF back if it's the Vercel function.
+    // The original server.js just returned JSON. Let's keep it simple or upgrade it?
+    // The user is likely using Vercel functions. Let's stick to the original server.js logic for this route
+    // which was just returning JSON, BUT wait, the frontend script calls this endpoint and expects a blob if successful?
+    // In script.js: const res = await fetch(endpoint...); const blob = await res.blob();
+    // So the original server.js was actually BROKEN for local testing of jpg-to-pdf too?
+    // Original server.js line 69: returns res.json({...}). Frontend expects blob.
+    // So local testing of jpg-to-pdf was probably broken.
+    // Let's fix it to return a PDF.
+
+    for (const f of files) {
+      const buf = await fsp.readFile(f.path)
+      let img
+      const lower = (f.originalname || '').toLowerCase()
+      try {
+        if (lower.endsWith('.png')) img = await pdfDoc.embedPng(buf)
+        else img = await pdfDoc.embedJpg(buf)
+        const page = pdfDoc.addPage([img.width, img.height])
+        page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height })
+      } catch (e) { console.error(e) }
+    }
+    const bytes = await pdfDoc.save()
+    res.setHeader('Content-Type', 'application/pdf')
+    res.setHeader('Content-Disposition', 'attachment; filename="images.pdf"')
+    res.end(Buffer.from(bytes))
+
   } catch (e) {
     console.error('Error handling JPG to PDF request:', e);
     res.status(500).json({ error: 'Failed to process request' });
+  } finally {
+    try { for (const f of (req.files || [])) await fsp.unlink(f.path).catch(() => { }) } catch { }
   }
 })
 
@@ -106,62 +97,93 @@ app.post('/api/merge-pdf', upload.array('files', 50), async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: e.message || 'Failed to merge PDFs' })
   } finally {
-    try { for (const f of files) { try { await fsp.unlink(f.path) } catch {} } } catch {}
+    try { for (const f of files) { try { await fsp.unlink(f.path) } catch { } } } catch { }
   }
 })
 
 app.post('/api/pdf-to-word', upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
-  const inputPath = req.file.path
-  const outDir = path.dirname(inputPath)
+
+  const secret = process.env.CONVERTAPI_SECRET
+  if (!secret) return res.status(500).json({ error: 'CONVERTAPI_SECRET not configured' })
+
   try {
-    const soffice = findSoffice()
-    await new Promise((resolve, reject) => {
-      const args = ['--headless', '--norestore', '--nolockcheck', '--convert-to', 'docx', '--outdir', outDir, inputPath]
-      const child = spawn(soffice, args, { stdio: 'ignore' })
-      child.on('error', reject)
-      child.on('exit', (code) => code === 0 ? resolve() : reject(new Error('LibreOffice conversion failed with code ' + code)))
-    })
-    const inBase = path.parse(inputPath).name
-    let outPath = path.join(outDir, inBase + '.docx')
-    try { await fsp.access(outPath) } catch {
-      const origBase = path.parse(req.file.originalname).name
-      const altPath = path.join(outDir, origBase + '.docx')
-      try { await fsp.access(altPath); outPath = altPath } catch {}
-    }
-    await fsp.access(outPath)
+    const ConvertAPI = (await import('convertapi')).default
+    const convertapi = new ConvertAPI(secret)
+    const result = await convertapi.convert('docx', { File: req.file.path }, 'pdf')
+    const docxUrl = result.file.url
+
+    const resp = await fetch(docxUrl)
+    if (!resp.ok) throw new Error('Failed to download converted file')
+
+    const buf = Buffer.from(await resp.arrayBuffer())
+
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-    res.setHeader('Content-Disposition', `attachment; filename="${path.basename(outPath)}"`)
-    const stream = fs.createReadStream(outPath)
-    stream.pipe(res)
-    stream.on('close', async () => {
-      try { await fsp.unlink(inputPath) } catch {}
-      try { await fsp.unlink(outPath) } catch {}
-    })
+    res.setHeader('Content-Disposition', 'attachment; filename="' + (req.file.originalname || 'document').replace(/\.pdf$/i, '') + '.docx"')
+    res.end(buf)
   } catch (e) {
-    res.status(500).json({ error: e.message || 'Failed to convert PDF to Word' })
+    console.error('Error handling file upload:', e);
+    res.status(500).json({ error: e.message || 'Failed to process file' });
+  } finally {
+    try { await fsp.unlink(req.file.path) } catch { }
   }
 })
 
 // File upload endpoint for Word to PDF conversion
 app.post('/api/convert', upload.single('file'), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded' });
-  }
-  
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
+
+  const secret = process.env.CONVERTAPI_SECRET
+  if (!secret) return res.status(500).json({ error: 'CONVERTAPI_SECRET not configured' })
+
   try {
-    // Return the file information to the client
-    res.json({
-      success: true,
-      file: {
-        name: req.file.originalname,
-        path: `/uploads/${req.file.filename}`,
-        type: req.file.mimetype
-      }
-    });
+    const ConvertAPI = (await import('convertapi')).default
+    const convertapi = new ConvertAPI(secret)
+    const result = await convertapi.convert('pdf', { File: req.file.path }, 'docx')
+    const pdfUrl = result.file.url
+
+    const resp = await fetch(pdfUrl)
+    if (!resp.ok) throw new Error('Failed to download converted file')
+
+    const buf = Buffer.from(await resp.arrayBuffer())
+
+    res.setHeader('Content-Type', 'application/pdf')
+    res.setHeader('Content-Disposition', 'attachment; filename="' + (req.file.originalname || 'document').replace(/\.(docx|doc)$/i, '') + '.pdf"')
+    res.end(buf)
   } catch (e) {
     console.error('Error handling file upload:', e);
-    res.status(500).json({ error: 'Failed to process file' });
+    res.status(500).json({ error: e.message || 'Failed to process file' });
+  } finally {
+    try { await fsp.unlink(req.file.path) } catch { }
+  }
+})
+
+// PPTX to PDF
+app.post('/api/pptx-to-pdf', upload.single('file'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
+
+  const secret = process.env.CONVERTAPI_SECRET
+  if (!secret) return res.status(500).json({ error: 'CONVERTAPI_SECRET not configured' })
+
+  try {
+    const ConvertAPI = (await import('convertapi')).default
+    const convertapi = new ConvertAPI(secret)
+    const result = await convertapi.convert('pdf', { File: req.file.path }, 'pptx')
+    const pdfUrl = result.file.url
+
+    const resp = await fetch(pdfUrl)
+    if (!resp.ok) throw new Error('Failed to download converted file')
+
+    const buf = Buffer.from(await resp.arrayBuffer())
+
+    res.setHeader('Content-Type', 'application/pdf')
+    res.setHeader('Content-Disposition', 'attachment; filename="' + (req.file.originalname || 'presentation').replace(/\.(pptx|ppt)$/i, '') + '.pdf"')
+    res.end(buf)
+  } catch (e) {
+    console.error('Error handling file upload:', e);
+    res.status(500).json({ error: e.message || 'Failed to process file' });
+  } finally {
+    try { await fsp.unlink(req.file.path) } catch { }
   }
 })
 
@@ -171,7 +193,5 @@ app.listen(port, () => {
 })
 
 app.get('/api/health', (req, res) => {
-  const pathGuess = findSoffice()
-  const exists = (() => { try { return fs.existsSync(pathGuess) } catch { return false } })()
-  res.json({ sofficePath: pathGuess, exists })
+  res.json({ status: 'ok' })
 })
