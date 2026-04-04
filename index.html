@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pranav · Portfolio</title>
+    <meta name="description" content="Portfolio of Pranav – Developer, Designer, Creator." />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%2321262d'/%3E%3Ctext x='50' y='62' text-anchor='middle' font-size='54' fill='%23fff' font-family='Segoe UI, Roboto, Helvetica, Arial, sans-serif'%3EP%3C/text%3E%3C/svg%3E" />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: [
+                'Inter','ui-sans-serif','system-ui','-apple-system','Segoe UI','Roboto','Helvetica Neue','Arial','Noto Sans','Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji'
+              ]
+            },
+            colors: {
+              brand: {
+                50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc',
+                400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca',
+                800: '#3730a3', 900: '#312e81'
+              }
+            },
+            boxShadow: {
+              glow: '0 0 0 3px rgb(99 102 241 / 0.2)'
+            }
+          }
+        }
+      }
+    </script>
+
+    <style>
+      /* Elegant gradient background */
+      .bg-grid {
+        background-image: radial-gradient(circle at 1px 1px, rgb(99 102 241 / 0.20) 1px, transparent 1px);
+        background-size: 24px 24px;
+        mask-image: linear-gradient(to bottom, black, transparent 70%);
+      }
+      .glass {
+        backdrop-filter: saturate(160%) blur(12px);
+        background: rgb(17 24 39 / 0.55);
+        border: 1px solid rgb(255 255 255 / 0.07);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen font-sans bg-white text-slate-800 dark:bg-slate-900 dark:text-slate-100">
+    <!-- Header -->
+    <header class="fixed top-0 inset-x-0 z-50">
+      <div class="max-w-6xl mx-auto px-4">
+        <div class="mt-3 rounded-2xl glass text-slate-100">
+          <nav class="flex items-center justify-between px-4 py-3">
+            <a href="#home" class="flex items-center gap-2">
+              <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 shadow-glow">P</span>
+              <span class="text-sm font-semibold tracking-wide text-slate-200">Pranav</span>
+            </a>
+            <div class="hidden md:flex items-center gap-1">
+              <a href="#about" class="nav-link px-3 py-2 rounded-lg text-sm hover:bg-white/10">About</a>
+              <a href="#projects" class="nav-link px-3 py-2 rounded-lg text-sm hover:bg-white/10">Projects</a>
+              <a href="#skills" class="nav-link px-3 py-2 rounded-lg text-sm hover:bg-white/10">Skills</a>
+              <a href="#contact" class="nav-link px-3 py-2 rounded-lg text-sm hover:bg-white/10">Contact</a>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="themeToggle" aria-label="Toggle theme" class="px-3 py-2 rounded-lg text-sm hover:bg-white/10">
+                <span id="themeIcon">🌙</span>
+              </button>
+              <a href="#contact" class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-sm shadow-md">Hire me</a>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero -->
+    <section id="home" class="relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-b from-brand-500/10 via-transparent to-transparent"></div>
+      <div class="absolute inset-0 bg-grid pointer-events-none"></div>
+      <div class="max-w-6xl mx-auto px-4 pt-36 pb-20">
+        <div class="grid md:grid-cols-2 items-center gap-10">
+          <div>
+            <p class="text-sm uppercase tracking-[0.25em] text-brand-600/80">PORTFOLIO</p>
+            <h1 class="mt-3 text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight">
+              Hi, I'm <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-brand-600">Pranav</span>.
+            </h1>
+            <p class="mt-4 text-slate-600 dark:text-slate-300 max-w-xl">
+              Developer crafting delightful web experiences with performance, accessibility, and clean design in mind.
+            </p>
+            <div class="mt-8 flex flex-wrap items-center gap-3">
+              <a href="#projects" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 hover:shadow-glow">
+                <span>View Projects</span>
+              </a>
+              <a href="#contact" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800">
+                <span>Contact</span>
+              </a>
+            </div>
+            <div class="mt-8 flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
+              <span class="inline-flex items-center gap-2"><span class="text-base">⚡</span>Fast</span>
+              <span class="inline-flex items-center gap-2"><span class="text-base">🎯</span>Focused</span>
+              <span class="inline-flex items-center gap-2"><span class="text-base">🛠️</span>Pragmatic</span>
+            </div>
+          </div>
+          <div class="md:justify-self-end">
+            <div class="relative">
+              <div class="absolute -inset-6 bg-gradient-to-tr from-brand-600/30 to-transparent rounded-3xl blur-2xl"></div>
+              <div class="relative aspect-square w-72 sm:w-80 md:w-96 rounded-3xl overflow-hidden ring-1 ring-slate-200/50 dark:ring-white/10">
+                <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1200&auto=format&fit=crop" alt="Profile" class="h-full w-full object-cover" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section id="about" class="py-20">
+      <div class="max-w-6xl mx-auto px-4">
+        <div class="grid md:grid-cols-3 gap-10 items-start">
+          <div class="md:col-span-1">
+            <h2 class="text-2xl font-bold">About</h2>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">A quick intro</p>
+          </div>
+          <div class="md:col-span-2 space-y-4 text-slate-600 dark:text-slate-300">
+            <p>
+              I'm a multidisciplinary developer who loves building polished, scalable, and user-friendly products. I care about details, code quality, and thoughtful interactions.
+            </p>
+            <p>
+              My toolkit includes modern JavaScript, TypeScript, React, Node.js, and cloud services. I design with accessibility and performance as first-class citizens.
+            </p>
+            <div class="flex flex-wrap gap-3">
+              <span class="px-3 py-1 text-sm rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-300 border border-brand-500/20">Frontend</span>
+              <span class="px-3 py-1 text-sm rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-300 border border-brand-500/20">Backend</span>
+              <span class="px-3 py-1 text-sm rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-300 border border-brand-500/20">UI/UX</span>
+              <span class="px-3 py-1 text-sm rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-300 border border-brand-500/20">DevOps</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Projects -->
+    <section id="projects" class="py-20 bg-slate-50 dark:bg-slate-950/40">
+      <div class="max-w-6xl mx-auto px-4">
+        <div class="flex items-end justify-between gap-6">
+          <div>
+            <h2 class="text-2xl font-bold">Projects</h2>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">Selected work</p>
+          </div>
+          <a href="#contact" class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm">Let’s collaborate</a>
+        </div>
+
+        <div class="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Card 1 -->
+          <article class="group rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 hover:shadow-xl transition-shadow">
+            <div class="relative">
+              <img class="h-44 w-full object-cover" src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop" alt="Project 1" />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            </div>
+            <div class="p-5">
+              <h3 class="font-semibold">Modern Dashboard</h3>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Responsive analytics dashboard with dark mode and charting.</p>
+              <div class="mt-4 flex items-center gap-2 text-xs text-slate-500">
+                <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">React</span>
+                <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">Tailwind</span>
+                <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">Node</span>
+              </div>
+              <div class="mt-4 flex items-center gap-3 text-sm">
+                <a href="#" class="text-brand-600 hover:underline">Live</a>
+                <a href="#" class="text-slate-500 hover:underline">Code</a>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 2 -->
+          <article class="group rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 hover:shadow-xl transition-shadow">
+            <div class="relative">
+              <img class="h-44 w-full object-cover" src="https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=1200&auto=format&fit=crop" alt="Project 2" />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            </div>
+            <div class="p-5">
+              <h3 class="font-semibold">E-commerce UI</h3>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Elegant storefront with filters, cart, and checkout demo.</p>
+              <div class="mt-4 flex items-center gap-2 text-xs text-slate-500">
+                <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">Next.js</span>
+                <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">Tailwind</span>
+                <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">Stripe</span>
+              </div>
+              <div class="mt-4 flex items-center gap-3 text-sm">
+                <a href="#" class="text-brand-600 hover:underline">Live</a>
+                <a href="#" class="text-slate-500 hover:underline">Code</a>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 3 -->
+          <article class="group rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 hover:shadow-xl transition-shadow">
+            <div class="relative">
+              <img class="h-44 w-full object-cover" src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=1200&auto=format&fit=crop" alt="Project 3" />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            </div>
+            <div class="p-5">
+              <h3 class="font-semibold">SaaS Landing</h3>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Conversion-focused marketing page with animations.</p>
+              <div class="mt-4 flex items-center gap-2 text-xs text-slate-500">
+                <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">Astro</span>
+                <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">Tailwind</span>
+                <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">GSAP</span>
+              </div>
+              <div class="mt-4 flex items-center gap-3 text-sm">
+                <a href="#" class="text-brand-600 hover:underline">Live</a>
+                <a href="#" class="text-slate-500 hover:underline">Code</a>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Skills -->
+    <section id="skills" class="py-20">
+      <div class="max-w-6xl mx-auto px-4">
+        <h2 class="text-2xl font-bold">Skills</h2>
+        <p class="mt-2 text-slate-600 dark:text-slate-300">Tools & technologies</p>
+        <div class="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="p-5 rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900">
+            <h4 class="font-semibold">Frontend</h4>
+            <div class="mt-3 flex flex-wrap gap-2 text-sm text-slate-600 dark:text-slate-400">
+              <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">HTML</span>
+              <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">CSS</span>
+              <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">JavaScript</span>
+              <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">React</span>
+              <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">Tailwind</span>
+            </div>
+          </div>
+          <div class="p-5 rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900">
+            <h4 class="font-semibold">Backend</h4>
+            <div class="mt-3 flex flex-wrap gap-2 text-sm text-slate-600 dark:text-slate-400">
+              <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">Node.js</span>
+              <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">Express</span>
+              <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">REST</span>
+              <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">PostgreSQL</span>
+            </div>
+          </div>
+          <div class="p-5 rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900">
+            <h4 class="font-semibold">DevOps</h4>
+            <div class="mt-3 flex flex-wrap gap-2 text-sm text-slate-600 dark:text-slate-400">
+              <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">Docker</span>
+              <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">CI/CD</span>
+              <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">AWS</span>
+            </div>
+          </div>
+          <div class="p-5 rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900">
+            <h4 class="font-semibold">Design</h4>
+            <div class="mt-3 flex flex-wrap gap-2 text-sm text-slate-600 dark:text-slate-400">
+              <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">Figma</span>
+              <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">Accessibility</span>
+              <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">Animations</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="py-20 bg-slate-50 dark:bg-slate-950/40">
+      <div class="max-w-6xl mx-auto px-4">
+        <div class="grid md:grid-cols-2 gap-10">
+          <div>
+            <h2 class="text-2xl font-bold">Get in touch</h2>
+            <p class="mt-2 text-slate-600 dark:text-slate-300 max-w-md">Have a project in mind or want to say hi? I’d love to hear from you.</p>
+            <div class="mt-6 space-y-3 text-slate-600 dark:text-slate-300">
+              <p>📧 <a class="text-brand-600 hover:underline" href="mailto:you@example.com">you@example.com</a></p>
+              <p>💼 <a class="text-brand-600 hover:underline" href="#" target="_blank" rel="noreferrer">LinkedIn</a></p>
+              <p>💻 <a class="text-brand-600 hover:underline" href="#" target="_blank" rel="noreferrer">GitHub</a></p>
+            </div>
+          </div>
+
+          <form class="p-6 rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 space-y-4" onsubmit="return handleContact(event)">
+            <div>
+              <label class="block text-sm mb-1">Name</label>
+              <input class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent" placeholder="Your name" required />
+            </div>
+            <div>
+              <label class="block text-sm mb-1">Email</label>
+              <input type="email" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent" placeholder="you@example.com" required />
+            </div>
+            <div>
+              <label class="block text-sm mb-1">Message</label>
+              <textarea rows="4" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent" placeholder="Say hello..." required></textarea>
+            </div>
+            <button class="w-full px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white shadow-md">Send</button>
+            <p id="contactNote" class="text-xs text-slate-500">This demo opens your email app with a prefilled message.</p>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-10">
+      <div class="max-w-6xl mx-auto px-4">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-slate-500">
+          <p>© <span id="year"></span> Pranav. All rights reserved.</p>
+          <div class="flex items-center gap-4">
+            <a href="#home" class="hover:underline">Top</a>
+            <a href="#projects" class="hover:underline">Projects</a>
+            <a href="#contact" class="hover:underline">Contact</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
